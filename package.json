@@ -1,7 +1,9 @@
 {
+  "name": "bongda24h-proxy",
+  "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "puppeteer-core": "^21.3.8",
-    "@sparticuz/chromium": "^121.0.0"
+    "@sparticuz/chromium": "^121.0.0",
+    "puppeteer-core": "^21.3.8"
   }
 }
