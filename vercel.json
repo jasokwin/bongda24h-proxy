@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/crawl-html.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/crawl-html",
+      "dest": "api/crawl-html.js"
+    }
+  ]
+}
