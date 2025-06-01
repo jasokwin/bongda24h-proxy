@@ -5,26 +5,28 @@ export default async function handler(req, res) {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: 'Missing ?url=' });
 
-  const executablePath = await chromium.executablePath();
+  let browser = null;
 
-  // ✅ Thêm dòng kiểm tra dưới đây
-  if (!executablePath) {
-    return res.status(500).json({ error: 'Chromium executablePath not found' });
+  try {
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath, // ❗ KHÔNG có dấu ngoặc ()
+      headless: chromium.headless,
+    });
+
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'networkidle2' });
+
+    const content = await page.content();
+    res.setHeader('Cache-Control', 'no-cache');
+    res.status(200).json({ html: content });
+
+  } catch (err) {
+    console.error('Crawler error:', err);
+    res.status(500).json({ error: 'Crawling failed' });
+
+  } finally {
+    if (browser) await browser.close();
   }
-
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath,
-    headless: chromium.headless,
-  });
-
-  const page = await browser.newPage();
-  await page.goto(url, { waitUntil: 'networkidle2' });
-
-  const content = await page.content();
-  await browser.close();
-
-  res.setHeader('Cache-Control', 'no-cache');
-  res.status(200).json({ html: content });
 }
