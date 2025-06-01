@@ -5,10 +5,17 @@ export default async function handler(req, res) {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: 'Missing ?url=' });
 
+  const executablePath = await chromium.executablePath();
+
+  // ✅ Thêm dòng kiểm tra dưới đây
+  if (!executablePath) {
+    return res.status(500).json({ error: 'Chromium executablePath not found' });
+  }
+
   const browser = await puppeteer.launch({
     args: chromium.args,
     defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath(),
+    executablePath,
     headless: chromium.headless,
   });
 
