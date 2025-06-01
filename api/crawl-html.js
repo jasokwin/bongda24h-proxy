@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium-min';
+import chromium from '@sparticuz/chromium';
 
 export default async function handler(req, res) {
   const { url } = req.query;
@@ -14,15 +14,14 @@ export default async function handler(req, res) {
     });
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'networkidle2' });
 
     const content = await page.content();
     await browser.close();
 
     res.setHeader('Cache-Control', 'no-cache');
-    return res.status(200).json({ html: content });
+    res.status(200).json({ html: content });
   } catch (err) {
-    console.error('[Crawler Error]', err); // in log trên Vercel
-    return res.status(500).json({ error: 'Crawling failed', details: err.message });
+    res.status(500).json({ error: 'Crawling failed', details: err.message });
   }
 }
