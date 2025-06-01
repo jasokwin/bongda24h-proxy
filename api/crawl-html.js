@@ -5,28 +5,24 @@ export default async function handler(req, res) {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: 'Missing ?url=' });
 
-  let browser = null;
-
   try {
-    browser = await puppeteer.launch({
+    const browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath, // ❗ KHÔNG có dấu ngoặc ()
+      executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     });
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
     const content = await page.content();
+    await browser.close();
+
     res.setHeader('Cache-Control', 'no-cache');
-    res.status(200).json({ html: content });
-
+    return res.status(200).json({ html: content });
   } catch (err) {
-    console.error('Crawler error:', err);
-    res.status(500).json({ error: 'Crawling failed' });
-
-  } finally {
-    if (browser) await browser.close();
+    console.error('[Crawler Error]', err); // in log trên Vercel
+    return res.status(500).json({ error: 'Crawling failed', details: err.message });
   }
 }
